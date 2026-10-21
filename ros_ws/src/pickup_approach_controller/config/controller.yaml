@@ -20,7 +20,7 @@ pickup_approach_controller:
 
     topics:
       odometry: /odometry/filtered
-      goal: /pickup_pose
+      goal: /goal_pose
       path: /pickup_approach/path
       too_close: /scrap_pile_skirt_node/too_close
       command: /pickup_approach/cmd_vel

@@ -107,7 +107,7 @@ public:
     odometry_topic_ = declare_parameter<std::string>(
       "topics.odometry", "/odometry/filtered");
     goal_topic_ = declare_parameter<std::string>(
-      "topics.goal", "/pickup_pose");
+      "topics.goal", "/goal_pose");
     path_topic_ = declare_parameter<std::string>(
       "topics.path", "/pickup_approach/path");
     too_close_topic_ = declare_parameter<std::string>(

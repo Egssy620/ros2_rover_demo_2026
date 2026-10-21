@@ -23,7 +23,7 @@
 | 種別 | 名前 | 型 | 内容 |
 |---|---|---|---|
 | Subscribe | `/odometry/filtered` | `nav_msgs/msg/Odometry` | 地図座標の融合自己位置、車体速度、共分散 |
-| Subscribe | `/pickup_pose` | `geometry_msgs/msg/PoseStamped` | 車体中心の目標位置・姿勢 |
+| Subscribe | `/goal_pose` | `geometry_msgs/msg/PoseStamped` | 統合版`master_node`が発行する車体中心の目標位置・姿勢 |
 | Subscribe | `/pickup_approach/path` | `nav_msgs/msg/Path` | 地図座標の計画経路 |
 | Subscribe | `/scrap_pile_skirt_node/too_close` | `std_msgs/msg/Bool` | 山への接近禁止 |
 | Publish | `/pickup_approach/cmd_vel` | `geometry_msgs/msg/Twist` | 最上位Muxへ渡す車体速度 |
