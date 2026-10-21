@@ -129,7 +129,7 @@ flowchart LR
     V --> VA[テスト機速度指令アダプター]
 ```
 
-既存のOptiTrack接続資料では、`natnet_ros2`が `/Mecanum_Rover/pose` を発行する構成になっている。自己位置互換アダプターを実装する前に、実機上でこのトピックのメッセージ型、`frame_id`、更新周期、時刻、姿勢軸を確認する。資料だけから型やフレームを推定して固定しない。
+今回の計測では、`natnet_ros2`のノード`/natnet_ros`が `/rover_1021/pose` を `geometry_msgs/msg/PoseStamped`、`frame_id=world`、RELIABLE/VOLATILE、約100 Hzで発行している。これを受ける `mocap_localization_adapter` を追加し、`/odometry/filtered`、`/robot_pose`、任意の正規TFへ変換する。Motiveの軸方向とOptiTrack剛体原点から車体中心までの取付値は、現場での軸移動試験と実測により較正する。
 
 ## この試験で確認できる範囲
 
@@ -148,11 +148,11 @@ flowchart LR
 
 ## 次の実装順序
 
-1. `/Mecanum_Rover/pose` の実メッセージ型、フレーム、更新周期、時刻、姿勢軸を記録する。
-2. モーションキャプチャから `/odometry/filtered` と正規TFを作る自己位置互換アダプターを実装する。
-3. テスト機の車体、梁、LiDAR取付値を `test_platform` 設定へ分離する。
-4. テスト山検出器の出力を正規の山認識I/Oへ変換する。
-5. 山接近制御の目標入力を統合経路の `/goal_pose` に接続する。
+1. `world`の+x/+y/+zとyaw正方向を既知方向への移動で確認する。
+2. OptiTrack剛体原点から車体中心`base_link`までの取付値を測定する。
+3. `mocap_localization_adapter`の較正値を設定し、静止時の位置・速度・共分散を記録する。
+4. テスト機の車体、梁、LiDAR取付値を `test_platform` 設定へ分離する。
+5. テスト山検出器の出力を正規の山認識I/Oへ変換する。
 6. 走行権限muxと結果調停を実装し、巡回側と山接近側が同時に最終指令・結果を発行しないようにする。
 7. 静止、軸方向、目標到着、観測欠測、TF欠損、権限切替の順で試験する。
 

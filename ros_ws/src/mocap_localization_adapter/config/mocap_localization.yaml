@@ -1,0 +1,39 @@
+mocap_localization_adapter:
+  ros__parameters:
+    # OptiTrack natnet_ros2の実測トピックです。
+    input_topic: /rover_1021/pose
+    input_frame: world
+
+    # 統合版と同じ外部インターフェースへ変換します。
+    odometry_topic: /odometry/filtered
+    robot_pose_topic: /robot_pose
+    map_frame: map
+    odom_frame: odom
+    base_frame: base_link
+
+    # TFの重複配信を避けるため、較正とTFツリー確認までは無効にします。
+    publish_tf: false
+
+    # T_map_world。Motiveのworld座標を試験場所のmap座標へ合わせる値です。
+    map_from_world_x: 0.0
+    map_from_world_y: 0.0
+    map_from_world_z: 0.0
+    map_from_world_yaw: 0.0
+
+    # T_rigid_body_base。OptiTrack剛体原点から車体中心base_linkまでの取付値です。
+    rigid_body_to_base_x: 0.0
+    rigid_body_to_base_y: 0.0
+    rigid_body_to_base_z: 0.0
+    rigid_body_to_base_yaw: 0.0
+
+    # 提示された位置3 mm、姿勢0.3 degを分散へ変換した値です。
+    position_variance: 0.000009
+    yaw_variance: 0.000027415568
+    unobserved_variance: 1000000.0
+
+    # 差分速度は100 Hzの位置ノイズを増幅するため、短い一次LPFを通します。
+    twist_filter_time_constant: 0.10
+    minimum_derivative_dt: 0.001
+    maximum_derivative_dt: 0.10
+    linear_velocity_variance: 0.0025
+    yaw_rate_variance: 0.007615435

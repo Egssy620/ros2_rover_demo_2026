@@ -35,3 +35,9 @@ ros2 launch pickup_approach_controller pickup_approach_controller.launch.py
 ```
 
 詳細は[`ros_ws/src/pickup_approach_controller/README.md`](ros_ws/src/pickup_approach_controller/README.md)を参照してください。
+
+## モーションキャプチャ自己位置アダプター
+
+テスト機では`mocap_localization_adapter`がOptiTrackの`/rover_1021/pose`を、統合版と同じ`/odometry/filtered`、`/robot_pose`、TFへ変換します。`world`から`map`への較正と、OptiTrack剛体原点から車体中心への取付値を設定して使用します。
+
+詳細は[`ros_ws/src/mocap_localization_adapter/README.md`](ros_ws/src/mocap_localization_adapter/README.md)を参照してください。
