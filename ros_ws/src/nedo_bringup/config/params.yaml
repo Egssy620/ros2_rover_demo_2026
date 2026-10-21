@@ -1,0 +1,11 @@
+/**:
+  ros__parameters:
+    # ID命名: marker_N (N = BIN番号、検出器の BIN_TO_MARKER_ID と1対1対応)
+    # 座標は base_link 系(map原点)からの実測値 [m]
+    # 2026-09-28 17:2x 実測: 台車停止中に /matched_marker (OT128, BIN検出器) を20秒平均 (287フレーム, sd < 1 mm)。
+    #   map 原点 = 測定時の台車位置 (base_link)、map の x 軸 = 測定時の台車の前方。
+    # 2026-09-28 18:xx OT128 の取付 TF に yaw +90° を入れたのに合わせて変換 (測定時は yaw 0 だった):
+    #   新 = t + R(+90°)(旧 − t)、t = OT128 取付位置 (0.40, 0)。旧値 marker_3 (2.1713, 8.1259) / marker_4 (0.1695, 8.0500)
+    LM_ids: ["marker_3", "marker_4"]
+    LM_xs:  [ -7.7259, -7.6500 ]
+    LM_ys:  [  1.7713, -0.2305 ]

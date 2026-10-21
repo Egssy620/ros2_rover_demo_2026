@@ -1,0 +1,92 @@
+/**:
+  ros__parameters:
+
+    # ── Topics ──────────────────────────────────────────────────────────────
+    pointCloudTopic: "/livox/lidar_lio_sam"
+    imuTopic: "/imu/fused"
+    odomTopic: "odometry/imu"          # published by LIO-SAM internally
+    gpsTopic: "odometry/gpsz"          # unused; GPS not available
+
+    # ── Frames ──────────────────────────────────────────────────────────────
+    lidarFrame: "base_link"
+    baselinkFrame: "base_link"
+    odometryFrame: "odom"
+    mapFrame: "map"
+
+    # ── GPS ─────────────────────────────────────────────────────────────────
+    useImuHeadingInitialization: false
+    useGpsElevation: false
+    gpsCovThreshold: 2.0
+    poseCovThreshold: 25.0
+
+    # ── PCD export ──────────────────────────────────────────────────────────
+    # savePCDDirectory is overridden at launch time with $HOME/lio_sam_output/
+    savePCD: false
+
+    # ── Sensor: Hesai QT128 ─────────────────────────────────────────────────
+    # QT128 outputs XYZI PointCloud2 compatible with the "velodyne" handler.
+    # Adjust Horizon_SCAN to match your rotation rate:
+    #   10 Hz → ~1800   20 Hz → ~900
+    sensor: velodyne
+    N_SCAN: 128
+    Horizon_SCAN: 900
+    downsampleRate: 1
+    lidarMinRange: 0.3                 # QT128 short-range blind zone ~0.3 m
+    lidarMaxRange: 20.0                # QT128 typical max range
+
+    # ── IMU noise (tune per device datasheet) ────────────────────────────────
+    imuAccNoise: 3.9939570888238808e-03
+    imuGyrNoise: 1.5636343949698187e-03
+    imuAccBiasN: 6.4356659353532566e-05
+    imuGyrBiasN: 3.5640318696367613e-05
+    imuGravity: 9.80511
+    imuRPYWeight: 0.01
+
+    # LiDAR-IMU extrinsic (identity = LiDAR and IMU are co-located)
+    # Replace with calibrated values if the IMU is offset from the LiDAR.
+    extrinsicTrans: [0.0, 0.0, 0.0]
+    extrinsicRot:   [1.0, 0.0, 0.0,
+                     0.0, 1.0, 0.0,
+                     0.0, 0.0, 1.0]
+    extrinsicRPY:   [1.0, 0.0, 0.0,
+                     0.0, 1.0, 0.0,
+                     0.0, 0.0, 1.0]
+
+    # ── LOAM feature extraction ──────────────────────────────────────────────
+    edgeThreshold: 1.0
+    surfThreshold: 0.1
+    edgeFeatureMinValidNum: 10
+    surfFeatureMinValidNum: 100
+
+    # ── Voxel filter ─────────────────────────────────────────────────────────
+    odometrySurfLeafSize: 0.2          # indoor: 0.2, outdoor: 0.4
+    mappingCornerLeafSize: 0.1
+    mappingSurfLeafSize: 0.2
+
+    # ── Motion constraint ────────────────────────────────────────────────────
+    z_tollerance: 1000.0
+    rotation_tollerance: 1000.0
+
+    # ── CPU ──────────────────────────────────────────────────────────────────
+    numberOfCores: 4
+    mappingProcessInterval: 0.15
+
+    # ── Keyframe / map ───────────────────────────────────────────────────────
+    surroundingkeyframeAddingDistThreshold: 0.5
+    surroundingkeyframeAddingAngleThreshold: 0.2
+    surroundingKeyframeDensity: 1.0
+    surroundingKeyframeSearchRadius: 30.0
+
+    # ── Loop closure ─────────────────────────────────────────────────────────
+    loopClosureEnableFlag: true
+    loopClosureFrequency: 1.0
+    surroundingKeyframeSize: 50
+    historyKeyframeSearchRadius: 10.0
+    historyKeyframeSearchTimeDiff: 30.0
+    historyKeyframeSearchNum: 25
+    historyKeyframeFitnessScore: 0.3
+
+    # ── Visualization ────────────────────────────────────────────────────────
+    globalMapVisualizationSearchRadius: 500.0
+    globalMapVisualizationPoseDensity: 5.0
+    globalMapVisualizationLeafSize: 0.5

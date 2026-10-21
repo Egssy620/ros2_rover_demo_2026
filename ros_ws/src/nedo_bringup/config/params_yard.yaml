@@ -1,0 +1,11 @@
+/**:
+  ros__parameters:
+    # ★見本: 地図は現地で測って作り、master.launch.py landmark_map_file:=<そのファイル> で渡す。この値はヤードの計画値
+    # ランドマーク地図: 実際のヤード (30 m 四方, 左下の角が原点) 2026-10-05
+    # ID命名: marker_N (N = BIN番号、検出器の BIN_TO_MARKER_ID と1対1対応)
+    #   marker_2 (10, 13) / marker_3 (10, 30): 家電山 (x 1〜10, y 15〜28) の右側
+    #   marker_4 (25, 30) / marker_5 (25, 20) / marker_6 (25, 10) / marker_7 (25, 0): 荷下ろし場所 (x 25〜30) の左側
+    # 座標は計画値。設置したら実測値で上書きすること (旧実験場の地図は旧 repo の params.yaml)
+    LM_ids: ["marker_2", "marker_3", "marker_4", "marker_5", "marker_6", "marker_7"]
+    LM_xs:  [10.0, 10.0, 25.0, 25.0, 25.0, 25.0]
+    LM_ys:  [13.0, 30.0, 30.0, 20.0, 10.0,  0.0]

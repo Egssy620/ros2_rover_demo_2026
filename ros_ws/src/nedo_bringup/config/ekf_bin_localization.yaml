@@ -1,0 +1,119 @@
+# ekf_bin_localization.yaml
+#
+# BIN ランドマーク自己位置推定 (bin_landmark_localization.launch.py) 用の
+# robot_localization 単一 EKF 設定。
+#
+# 方針
+# - 車輪オドメトリが無い構成のため、並進のデッドレコニング源は
+#   /cmd_vel 由来の疑似速度 (cmd_vel_to_twist_node が共分散付き twist 化) を使う。
+# - LM 自己位置 (localizer_node /robot_pose → pose_converter /robot_pose_cov) を
+#   絶対 (x, y, yaw) 補正として fuse。
+# - IMU (/livox/imu) はヨーレート (vyaw) のみ。Livox 内蔵 IMU は絶対姿勢を出さない
+#   ため絶対 yaw は使わない (絶対 yaw は LM 側が担う)。
+#
+# TF トポロジ (単一 EKF, world_frame=odom)
+# - robot_localization は 1 本の TF しか出さない。world_frame=odom なので
+#   EKF は odom→base_link を配信する (cmd_vel+IMU+LM を畳み込んだ連続推定)。
+# - map→odom は static identity を別途配信する (map と odom を一致させる)。
+#   → LM(/robot_pose_cov, frame=map) は map→odom 経由で odom 系に変換され取り込まれる。
+# - localizer の直接 map→base_link 配信 (publish_tf:=false) と、従来の static
+#   odom→base_link は撤去すること (EKF が odom→base_link を所有するため)。
+#   ※ static map→odom は残す。
+#
+# LM が 2〜3 秒途切れても、その間は cmd_vel 疑似速度 + IMU ヨーレートで予測を継続し、
+# 位置を保持する (精度は cmd_vel の追従精度に依存)。LM 復帰時は pose0 で再補正。
+# 単一 EKF のため LM 復帰時の補正は odom→base_link に乗る (= map=odom で同一)。
+
+ekf_filter_node:
+  ros__parameters:
+    frequency: 30.0
+    sensor_timeout: 0.2          # cmd_vel/IMU は連続して来るので通常タイムアウトしない
+    two_d_mode: true             # 平面走行: z/roll/pitch とその速度を 0 に拘束
+    transform_time_offset: 0.0
+    transform_timeout: 0.0
+    print_diagnostics: true
+    debug: false
+
+    map_frame: map
+    odom_frame: odom
+    base_link_frame: base_link
+    world_frame: odom            # 単一 EKF: EKF は odom→base_link を配信
+                                 # (map→odom は static identity を別途配信)
+
+    publish_tf: true
+    publish_acceleration: false
+
+    # --- pose0: LM 自己位置 (絶対 x, y, yaw) ---
+    # pose_converter (/robot_pose → /robot_pose_cov) が共分散を付与した map 系 pose。
+    pose0: /robot_pose_cov
+    pose0_config: [true,  true,  false,   # x, y, z
+                   false, false, true,    # roll, pitch, yaw
+                   false, false, false,   # vx, vy, vz
+                   false, false, false,   # vroll, vpitch, vyaw
+                   false, false, false]   # ax, ay, az
+    pose0_differential: false
+    pose0_relative: false
+    pose0_queue_size: 5
+    pose0_nodelay: true
+    # LM 復帰時のスパイク (誤対応・地図ずれ) を Mahalanobis 距離で棄却。
+    # デッドレコニング推定と大きく食い違う 1 発を弾き、ジャンプを防ぐ。
+    pose0_pose_rejection_threshold: 5.0
+
+    # --- twist0: cmd_vel 疑似速度 (vx, vy, vyaw) ---
+    # cmd_vel_to_twist_node (/cmd_vel → /cmd_vel_cov) の出力。base_link 系。
+    twist0: /cmd_vel_cov
+    twist0_config: [false, false, false,  # x, y, z
+                    false, false, false,  # roll, pitch, yaw
+                    true,  true,  false,  # vx, vy, vz
+                    false, false, false,   # vroll, vpitch, vyaw
+                    false, false, false]  # ax, ay, az
+    twist0_queue_size: 10
+    twist0_nodelay: true
+    twist0_twist_rejection_threshold: 5.0
+
+    # --- imu0: ヨーレートのみ (Livox は絶対姿勢を出さない) ---
+    imu0: /livox/imu
+    imu0_config: [false, false, false,    # x, y, z
+                  false, false, false,    # roll, pitch, yaw (絶対姿勢は使わない)
+                  false, false, false,    # vx, vy, vz
+                  false, false, true,     # vroll, vpitch, vyaw (ヨーレート)
+                  false, false, false]    # ax, ay, az
+    imu0_differential: false
+    imu0_relative: false
+    imu0_queue_size: 10
+    imu0_nodelay: true
+    imu0_remove_gravitational_acceleration: true
+
+    # プロセスノイズ共分散 (x,y,z, roll,pitch,yaw, vx,vy,vz, vroll,vpitch,vyaw, ax,ay,az)
+    # two_d_mode により z/roll/pitch 系は実質無効。x,y,yaw と vx,vy,vyaw を調整する。
+    process_noise_covariance: [1.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                               0.0,  1.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                               0.0,  0.0,  0.06, 0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                               0.0,  0.0,  0.0,  0.03, 0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                               0.0,  0.0,  0.0,  0.0,  0.03, 0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                               0.0,  0.0,  0.0,  0.0,  0.0,  1.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                               0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.025,0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                               0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.025,0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                               0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.04, 0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                               0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.01, 0.0,  0.0,  0.0,  0.0,  0.0,
+                               0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.01, 0.0,  0.0,  0.0,  0.0,
+                               0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.02, 0.0,  0.0,  0.0,
+                               0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.01, 0.0,  0.0,
+                               0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.01, 0.0,
+                               0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.015]
+                               
+    initial_estimate_covariance: [1e-9, 0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                                  0.0,  1e-9, 0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                                  0.0,  0.0,  1e-9, 0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                                  0.0,  0.0,  0.0,  1e-9, 0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                                  0.0,  0.0,  0.0,  0.0,  1e-9, 0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                                  0.0,  0.0,  0.0,  0.0,  0.0,  1e-9, 0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                                  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  1.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                                  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  1.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                                  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  1e-9, 0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                                  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  1e-9, 0.0,  0.0,  0.0,  0.0,  0.0,
+                                  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  1e-9, 0.0,  0.0,  0.0,  0.0,
+                                  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  1.0,  0.0,  0.0,  0.0,
+                                  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  1e-9, 0.0,  0.0,
+                                  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  1e-9, 0.0,
+                                  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  1e-9]

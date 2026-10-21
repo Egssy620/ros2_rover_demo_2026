@@ -1,0 +1,149 @@
+Panels:
+  - Class: rviz_common/Displays
+    Name: Displays
+  - Class: rviz_common/Views
+    Name: Views
+Visualization Manager:
+  Class: ""
+  Displays:
+    - Class: rviz_default_plugins/Grid
+      Name: Grid
+      Enabled: true
+      Cell Size: 1
+      Plane Cell Count: 20
+      Color: 160; 160; 164
+      Alpha: 0.5
+      Reference Frame: <Fixed Frame>
+      Value: true
+    - Class: rviz_default_plugins/TF
+      Name: TF
+      Enabled: true
+      Frames:
+        All Enabled: false
+        base_footprint:
+          Value: true
+        base_link:
+          Value: false
+        hesai_qt128:
+          Value: true
+      Show Arrows: false
+      Show Axes: true
+      Show Names: false
+      Marker Scale: 0.6
+      Update Interval: 0
+      Value: true
+    - Class: rviz_default_plugins/PointCloud2
+      Name: RawCloud
+      Enabled: false
+      Topic:
+        Value: /hesai_qt128/lidar_points
+        Reliability Policy: Best Effort
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Depth: 1
+      Color Transformer: FlatColor
+      Color: 255; 170; 170
+      Alpha: 0.5
+      Style: Points
+      Size (Pixels): 2
+      Decay Time: 0
+      Queue Size: 10
+      Use Fixed Frame: true
+      Value: false
+    - Class: rviz_default_plugins/PointCloud2
+      Name: PileCluster (light red)
+      Enabled: true
+      Topic:
+        Value: /scrap_pile_skirt_node/cluster_points
+        Reliability Policy: Reliable
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Depth: 1
+      Color Transformer: RGB8
+      Alpha: 1
+      Style: Flat Squares
+      Size (m): 0.03
+      Decay Time: 0
+      Queue Size: 10
+      Use Fixed Frame: true
+      Value: true
+    - Class: rviz_default_plugins/PointCloud2
+      Name: Graspable (green)
+      Enabled: true
+      Topic:
+        Value: /scrap_pile_skirt_node/graspable_points
+        Reliability Policy: Reliable
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Depth: 1
+      Color Transformer: RGB8
+      Alpha: 1
+      Style: Flat Squares
+      Size (m): 0.03
+      Decay Time: 0
+      Queue Size: 10
+      Use Fixed Frame: true
+      Value: true
+    - Class: rviz_default_plugins/PointCloud2
+      Name: SkirtPoints (red)
+      Enabled: true
+      Topic:
+        Value: /scrap_pile_skirt_node/skirt_points
+        Reliability Policy: Reliable
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Depth: 1
+      Color Transformer: RGB8
+      Alpha: 1
+      Style: Flat Squares
+      Size (m): 0.05
+      Decay Time: 0
+      Queue Size: 10
+      Use Fixed Frame: true
+      Value: true
+    - Class: rviz_default_plugins/MarkerArray
+      Name: Nearest (white)
+      Enabled: true
+      Topic:
+        Value: /scrap_pile_skirt_node/markers
+        Reliability Policy: Reliable
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Depth: 1
+      Namespaces:
+        scrap_pile_skirt: true
+      Value: true
+    - Class: rviz_default_plugins/MarkerArray
+      Name: Planner (work line / goal / grasp)
+      Enabled: true
+      Topic:
+        Value: /pickup_planner_node/markers
+        Reliability Policy: Reliable
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Depth: 1
+      Value: true
+  Enabled: true
+  Global Options:
+    Background Color: 30; 30; 30
+    Fixed Frame: base_footprint
+    Frame Rate: 30
+  Name: root
+  Tools:
+    - Class: rviz_default_plugins/MoveCamera
+    - Class: rviz_default_plugins/Select
+    - Class: rviz_default_plugins/Measure
+  Value: true
+  Views:
+    Current:
+      Class: rviz_default_plugins/TopDownOrtho
+      Name: Current View
+      Scale: 400
+      Angle: 0
+      X: 0
+      Y: 0.75
+      Target Frame: <Fixed Frame>
+    Saved: ~
+Window Geometry:
+  Height: 1000
+  Width: 1600

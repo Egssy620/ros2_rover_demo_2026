@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>nedo_localization</name>
+  <version>0.0.0</version>
+  <description>TODO: Package description</description>
+  <maintainer email="raitayamagishi@gmail.com">oden</maintainer>
+  <license>TODO: License declaration</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <!-- Core runtime deps used by nodes in scrap_detection pipeline and localization -->
+  <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
+  <depend>ament_index_cpp</depend>
+  <depend>sensor_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>tf2</depend>
+  <depend>tf2_ros</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>tf2_sensor_msgs</depend>
+  <depend>vehicle_interface</depend>
+  <depend>cv_bridge</depend>
+  <depend>opencv2</depend>
+  <depend>visualization_msgs</depend>
+  <depend>std_srvs</depend>
+  <depend>nav_msgs</depend>
+  <depend>pcl_conversions</depend>
+  <depend>pcl_ros</depend>
+
+  <!-- Tests (optional; keep minimal) -->
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  <!-- <member_of_group>rosidl_interface_packages</member_of_group> -->
+  </export>
+</package>

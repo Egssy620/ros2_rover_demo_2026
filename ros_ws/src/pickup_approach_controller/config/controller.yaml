@@ -1,0 +1,67 @@
+pickup_approach_controller:
+  ros__parameters:
+    # 実機指令は、結線試験と安全監視の確認が終わるまで無効にします。
+    publish_motion_commands: false
+    enable_straight_line_fallback: false
+    require_environment_guard: true
+
+    control_rate_hz: 50.0
+    maximum_localization_age: 0.10
+    maximum_environment_age: 0.25
+    maximum_position_variance: 0.01
+    maximum_yaw_variance: 0.007615435
+    endpoint_position_tolerance: 0.03
+    endpoint_yaw_tolerance: 0.034906585
+    straight_path_spacing: 0.02
+
+    frames:
+      map: map
+      base: base_link
+
+    topics:
+      odometry: /odometry/filtered
+      goal: /pickup_pose
+      path: /pickup_approach/path
+      too_close: /scrap_pile_skirt_node/too_close
+      command: /pickup_approach/cmd_vel
+      debug_command: /pickup_approach/debug_cmd_vel
+      result: /pickup_approach/result
+      status: /pickup_approach/status
+
+    controller:
+      maximum_speed: 0.25
+      maximum_yaw_rate: 0.35
+      maximum_acceleration: 0.35
+      maximum_angular_acceleration: 0.60
+      maximum_jerk: 0.80
+      maximum_angular_jerk: 1.50
+      maximum_snap: 3.0
+      maximum_angular_snap: 5.0
+      maximum_lateral_acceleration: 0.25
+      path_deceleration: 0.20
+      maximum_longitudinal_recovery_speed: 0.04
+      position_gain: 0.80
+      yaw_gain: 1.20
+      maximum_correction_speed: 0.08
+      maximum_correction_yaw_rate: 0.18
+      projection_search_back: 0.60
+      projection_search_ahead: 0.80
+      progress_correction_time_constant: 0.10
+      maximum_progress_rate: 0.80
+      curvature_feedforward_gain: 1.0
+      velocity_shaping_gain: 25.0
+      acceleration_shaping_gain: 10.0
+      yaw_rate_shaping_gain: 9.0
+      angular_acceleration_shaping_gain: 6.0
+
+    arrival:
+      position_tolerance: 0.020
+      yaw_tolerance: 0.020943951
+      command_speed_tolerance: 0.010
+      command_yaw_rate_tolerance: 0.010
+      window_seconds: 0.8
+      minimum_window_seconds: 0.5
+      minimum_samples: 10
+      confidence_sigma: 2.0
+      maximum_position_drift_rate: 0.005
+      maximum_yaw_drift_rate: 0.008726646

@@ -1,0 +1,33 @@
+{
+    "_comment": [
+        "livox_ros_driver2 (Livox-SDK2 ベース) の Avia 用設定テンプレート。",
+        "実機の IP / シリアル / UDP ポートに合わせて編集すること。",
+        "UDP ポートは Hesai OT128 (2368/9347) と衝突しない 56xxx 帯を使用。",
+        "詳細スキーマ: https://github.com/Livox-SDK/livox_ros_driver2"
+    ],
+    "lidar_summary_info": {
+        "lidar_type": 1
+    },
+    "lidar_config": [
+        {
+            "device_type": "avia",
+            "ip": "192.168.1.12",
+            "data_port": 56300,
+            "cmd_port": 56500,
+            "sensor_imu_port": 56400,
+            "frame_id": "livox_frame",
+            "return_mode": 0,
+            "coordinate": 0,
+            "imu_rate": 1,
+            "extrinsic_parameter_source": 0,
+            "enable_high_sensitivity": false
+        }
+    ],
+    "host_net_info": {
+        "lidar_data_ip": "192.168.1.5",
+        "host_data_port": 56300,
+        "host_cmd_port": 56500,
+        "host_imu_port": 56400,
+        "multicast_ip": ""
+    }
+}

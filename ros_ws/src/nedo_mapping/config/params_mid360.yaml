@@ -1,0 +1,101 @@
+/**:
+  ros__parameters:
+
+    # ── Topics ──────────────────────────────────────────────────────────────
+    # livox_converter republishes /livox/lidar with ring+time fields here:
+    pointCloudTopic: "/livox/lidar_lio_sam"
+    imuTopic: "/imu/fused"
+    odomTopic: "odometry/imu"
+    gpsTopic: "odometry/gpsz"
+
+    # ── Frames ──────────────────────────────────────────────────────────────
+    lidarFrame: "livox_frame"
+    baselinkFrame: "base_link"
+    odometryFrame: "odom"
+    mapFrame: "map"
+
+    # ── GPS ─────────────────────────────────────────────────────────────────
+    useImuHeadingInitialization: false
+    useGpsElevation: false
+    gpsCovThreshold: 2.0
+    poseCovThreshold: 25.0
+
+    # ── PCD export ──────────────────────────────────────────────────────────
+    savePCD: false
+
+    # ── Sensor: Livox Mid-360 ───────────────────────────────────────────────
+    # Mid-360 uses livox_ros_driver2 (xfer_format=1 = PointCloud2).
+    # livox_converter converts line→ring and timestamp→time before LIO-SAM.
+    #
+    # N_SCAN  : number of distinct line IDs from the driver.
+    #           Mid-360 has 4 optical paths → line values 0-3.
+    #           Use 6 to leave margin (points with ring>=N_SCAN are discarded).
+    # Horizon_SCAN: max points per beam per 100ms frame.
+    #           200k pts/s × 0.1s / 6 beams ≈ 3333 → use 4000 for margin.
+    sensor: livox
+    N_SCAN: 6
+    Horizon_SCAN: 4000
+    downsampleRate: 1
+    lidarMinRange: 0.1
+    lidarMaxRange: 40.0
+
+    # ── IMU noise (Mid-360 built-in ICM-40609, tune from calibration) ────────
+    # Calibration was done against raw driver output (in g).
+    # odom_imu_fuser scales linear_acceleration by 9.80511 before publishing,
+    # so imuAccNoise and imuAccBiasN must also be scaled by 9.80511.
+    #   original (g):        imuAccNoise=3.9940e-03  imuAccBiasN=6.4357e-05
+    #   scaled (m/s²): ×9.80511
+    imuAccNoise: 3.9163370033397600e-02
+    imuGyrNoise: 1.5636343949698187e-03
+    imuAccBiasN: 6.3091040897085600e-04
+    imuGyrBiasN: 3.5640318696367613e-05
+    imuGravity: 9.80511
+    imuRPYWeight: 0.01
+
+    # LiDAR-IMU extrinsic (Mid-360 built-in IMU; replace with calibrated values)
+    extrinsicTrans: [0.0, 0.0, 0.0]
+    extrinsicRot:   [1.0, 0.0, 0.0,
+                     0.0, 1.0, 0.0,
+                     0.0, 0.0, 1.0]
+    extrinsicRPY:   [1.0, 0.0, 0.0,
+                     0.0, 1.0, 0.0,
+                     0.0, 0.0, 1.0]
+
+    # ── LOAM feature extraction ──────────────────────────────────────────────
+    edgeThreshold: 1.0
+    surfThreshold: 0.1
+    edgeFeatureMinValidNum: 10
+    surfFeatureMinValidNum: 100
+
+    # ── Voxel filter (indoor) ────────────────────────────────────────────────
+    odometrySurfLeafSize: 0.2
+    mappingCornerLeafSize: 0.1
+    mappingSurfLeafSize: 0.2
+
+    # ── Motion constraint ────────────────────────────────────────────────────
+    z_tollerance: 1000.0
+    rotation_tollerance: 1000.0
+
+    # ── CPU ──────────────────────────────────────────────────────────────────
+    numberOfCores: 4
+    mappingProcessInterval: 0.15
+
+    # ── Keyframe / map ───────────────────────────────────────────────────────
+    surroundingkeyframeAddingDistThreshold: 0.5
+    surroundingkeyframeAddingAngleThreshold: 0.2
+    surroundingKeyframeDensity: 1.0
+    surroundingKeyframeSearchRadius: 30.0
+
+    # ── Loop closure ─────────────────────────────────────────────────────────
+    loopClosureEnableFlag: true
+    loopClosureFrequency: 1.0
+    surroundingKeyframeSize: 50
+    historyKeyframeSearchRadius: 5.0
+    historyKeyframeSearchTimeDiff: 30.0
+    historyKeyframeSearchNum: 25
+    historyKeyframeFitnessScore: 0.3
+
+    # ── Visualization ────────────────────────────────────────────────────────
+    globalMapVisualizationSearchRadius: 50.0
+    globalMapVisualizationPoseDensity: 10.0
+    globalMapVisualizationLeafSize: 1.0

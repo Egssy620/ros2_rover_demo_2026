@@ -1,0 +1,7 @@
+/**:
+  ros__parameters:
+    LM_ids: ["marker6", "marker7", "marker8", "marker0"]
+    LM_xs:  [0.0,      0.0,      -3.9,      -6.6]
+    LM_ys:  [0.0,      -2.5,     0.0,     0.0]
+
+    # hesai_region_filter_node 用の抽出領域設定（任意）もここに含めたい、そのうち

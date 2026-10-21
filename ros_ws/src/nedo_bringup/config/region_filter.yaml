@@ -1,0 +1,19 @@
+/**:
+  ros__parameters:
+    # 抽出領域（Hesai QT128 region filter 用）
+    # landmark_map_server_node と同じランドマーク ID を使用する
+    # 単一点中心方式: landmark0 を中心とみなし 2 ランドマーク距離計算を無効化
+    region_landmark1_id: "landmark0"
+    region_landmark2_id: "landmark0"
+
+    # 円筒領域パラメータ（静的）
+    # 半径 = (距離/2 + margin) だが距離=0 になるため margin を希望半径 2.5m に設定
+    cylinder_radius_margin: 2.5
+    cylinder_z_min: -5.0
+    cylinder_z_max: 2.0
+
+    # 動的に変えることが多い項目 (launch で指定):
+    #   input_topic, input_frame, output_frame, transform_timeout,
+    #   enable_max_z_output, max_z_topic, debug_output, publish_transform_info
+    # 必要になった場合のみここへ追加してください。
+    robot_pose_timeout: 1.0

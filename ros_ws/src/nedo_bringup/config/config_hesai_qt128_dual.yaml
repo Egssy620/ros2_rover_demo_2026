@@ -1,0 +1,145 @@
+# config_hesai_qt128_dual.yaml
+#
+# OT128 と同時起動するときの QT128 設定 (config_hesai_qt128.yaml の IP/ポートだけ変えたもの)。
+#   QT128 実機を Web UI で 192.168.1.202 / 宛先 UDP 2369 に変更してから使う。OT128 は .201 / 2368 のまま。
+#   bin_landmark_localization.launch.py qt128_config_file:=<このファイル> で指定する。
+#   単独運用に戻すときは config_hesai_qt128.yaml (.201 / 2368) を使う。
+#
+# 以下は元ファイル (config_hesai_qt128.yaml) の説明:
+#
+# Hesai QT128 (PandarQT128 / QT128C2X) 用 hesai_ros_driver 設定。
+#
+# 【重要】QT128 と OT128 を同時運用する場合の分離ルール
+# 【運用形態】
+#  A) 1台ずつ差し替えて使う (現状の運用)
+#       両機とも IP 192.168.1.201 / UDP 2368 (工場出荷時) のままでよい。
+#       frame_id と namespace だけが QT128/OT128 で分かれるので、
+#       sensor_type:=qt128 / :=ot128 で切替える。本ファイルはこの設定。
+#  B) 2台同時に使う
+#       同一IP・同一ポートでは共存できない。QT128 実機を Web UI で
+#       192.168.1.202 / UDP 2369 に変更し、本ファイルの該当2箇所
+#       ([同時運用] と書かれた行) も同じ値に変更すること。
+#       OT128 は .201 / 2368 のまま据え置く。
+#
+# UDP の分離が必須な理由:
+#   libhesai の受信ソケットは INADDR_ANY:<udp_port> に SO_REUSEADDR 付きで bind し
+#   (libhesai/Source/src/socket_source.cc)、送信元IPによる選別は
+#   device_udp_src_port >= 1024 を設定したときしか働かない
+#   (driver/hesai_lidar_sdk.hpp の device_udp_port_ != 0 ガード)。
+#   したがって 2台が同じ宛先ポート 2368 に送ると、両方のドライバが両方の
+#   パケットをパースして点群が破綻する。device_ip_address を別々に書いても
+#   防げない (あれは PTC/TCP 接続先の指定であって受信フィルタではない)。
+#
+# 本ファイルの値は LiDAR 実機側の設定と一致している必要がある。
+# 宛先IP/ポートは Hesai の Web UI (http://<LiDAR IP>) で変更すること。
+
+lidar:
+  - driver:
+      use_gpu: false
+      source_type: 1                                  # The type of data source, 1: real-time lidar connection, 2: pcap, 3: packet rosbag, 4: serial    
+      # Depending on the type of source_type, fill in the corresponding configuration block (lidar_udp_type, pcap_type, serial_type)
+      lidar_udp_type:
+        # [単独運用] 工場出荷時デフォルトのまま。QT128 を単体で繋ぐ場合はこれでよい。
+        # [同時運用] ↓を 192.168.1.202 に変更し、QT128 実機も Web UI
+        #            (http://192.168.1.201) で 192.168.1.202 に変更すること。
+        #            OT128 が .201 を使うため、そのままでは衝突する。
+        device_ip_address: 192.168.1.202              # [同時運用] QT128 実機も Web UI で .202 に変更済みであること
+                                                      # ホストPC側は同サブネットの 192.168.1.100/24 を割当てる。
+        # [単独運用] 工場出荷時デフォルトのまま。
+        # [同時運用] ↓を 2369 に変更し、QT128 実機の宛先ポートも Web UI で
+        #            2369 に変更すること。ここだけ変えても実機が 2368 に
+        #            送っていれば届かない。
+        udp_port: 2369                                # [同時運用] QT128 実機の宛先ポートも 2369 に変更済みであること
+        ptc_port: 9347                                # PTC port of lidar (制御/補正ファイル取得)
+        multicast_ip_address: 255.255.255.255
+
+        use_ptc_connected: true                       # true: PTC 経由で OT128 から補正ファイルを自動取得する。
+        host_ptc_port: 0                              # PTC source port, 0 means auto
+        # use_ptc_connected: true の場合、補正/firetime は OT128 本体から自動取得され
+        # 以下のパスは無視される。PTC が使えない環境ではリポジトリ同梱の
+        #   third_party/src/HesaiLidar_ROS_2.0/src/driver/HesaiLidar_SDK_2.0/correction/
+        #     angle_correction/QT128C2X_Angle Correction File.csv
+        #     firetime_correction/QT128C2X_Firetime Correction File.csv
+        # を絶対パスで指定すること。
+        correction_file_path: ""                      # The path of correction file (空=PTC自動取得)
+        firetimes_path: ""                            # The path of firetimes file (空=PTC自動取得)
+
+        recv_point_cloud_timeout: -1                  # The timeout of receiving point cloud
+        ptc_connect_timeout: -1                       # The timeout of ptc connection
+
+        host_ip_address: ""
+        fault_message_port: 0
+
+        standby_mode: -1                              # The standby mode: [-1] is invalit [0] in operation [1] standby
+        speed: -1                                     # The speed: [-1] invalit, you must make sure your set has been supported by the lidar you are using
+        ptc_mode: 0                                   # The ptc mode: [0] tcp [1] tcp_ssl
+        # tcp_ssl use
+        certFile: ""                                  # Represents the path of the user's certificate
+        privateKeyFile: ""                            # Represents the path of the user's private key 
+        caFile: ""                                    # Represents the path of the CA certificate 
+
+      pcap_type:
+        pcap_path: "Your pcap file"                         # The path of pcap file
+        correction_file_path: "Your correction file path"   # The path of correction file
+        firetimes_path: "Your firetime file path"           # The path of firetimes file
+
+        pcap_play_synchronization: true                     # pcap play rate synchronize with the host time
+        pcap_play_in_loop: false
+        play_rate_: 1.0                                     # pcap play rate 
+      
+      rosbag_type:
+        correction_file_path: "Your correction file path"   # The path of correction file
+        firetimes_path: "Your firetime file path"           # The path of firetimes file
+
+      serial_type:
+        rs485_com: "Your serial port name for receiving point cloud"  # if using JT16, Port to receive the point cloud
+        rs232_com: "Your serial port name for sending cmd"            # if using JT16, Port to send cmd
+        point_cloud_baudrate: 3125000
+        correction_save_path: ""                                      # turn on when you need to store angle calibration files(from lidar)
+        correction_file_path: "Your correction file path"             # The path of correction file
+      
+      # public module
+      use_timestamp_type: 0                 # 0 use point cloud timestamp; 1 use receive timestamp
+      frame_start_azimuth: 0                # Frame azimuth for Pandar128, range from 1 to 359, set it less than 0 if you do not want to use it      
+      # parser thread num
+      thread_num: 4
+      # transform param
+      transform_flag: false
+      x: 0
+      y: 0
+      z: 0
+      roll: 0
+      pitch: 0
+      yaw: 0
+      # fov config, [fov_start, fov_end] range [1, 359], [-1, -1]means use default
+      fov_start: -1
+      fov_end:  -1
+      channel_fov_filter_path: "Your channel fov filter file path"  # The path of channel_fov_filter file, like channel 0 filter [10, 20] and [30,40]
+      multi_fov_filter_ranges: "" # compare to channel_fov_filter_path, multi_fov_filter_ranges for all channels. example config "[20,30];[40,200]"
+      # other config
+      enable_packet_loss_tool: true         # enable the udp packet loss detection tool
+      distance_correction_flag: false       # set to true when optical centre correction needs to be turned on
+      xt_spot_correction: false             # Set to TRUE when XT S point cloud layering correction is required
+      device_udp_src_port: 0                # Filter point clouds for specified source ports in case of multiple lidar, setting >=1024
+      device_fault_port: 0                  # Filter fault message for specified source ports in case of multiple lidar, setting >=1024
+      frame_frequency: 0                    # The frequency that point cloud sends.
+      default_frame_frequency: 10.0         # The default frequency that point cloud sends.
+      echo_mode_filter: 0                   # return mode filter
+
+    ros:
+      ros_frame_id: hesai_qt128                       # Frame id (QT128専用。OT128 と必ず別名にする)
+      ros_recv_packet_topic: lidar_packets            # 相対名: ns で QT128/OT128 を分離
+      ros_send_packet_topic: lidar_packets            # 相対名: ns で QT128/OT128 を分離
+      # 相対名(先頭スラッシュなし)にして node の namespace を効かせる。
+      #  - 単体起動 (namespaceなし)              → /lidar_points
+      #  - bin/ekf launch (namespace='hesai_qt128') → /hesai_qt128/lidar_points
+      ros_send_point_cloud_topic: lidar_points        # Topic used to send point cloud through ROS
+      ros_send_imu_topic: lidar_imu                   # Topic used to send lidar imu message
+      ros_send_packet_loss_topic: lidar_packets_loss  # 相対名: ns で QT128/OT128 を分離
+      # ros_recv_correction_topic: /lidar_corrections # Topic used to receive corrections file from rosbag
+      # ros_send_correction_topic: /lidar_corrections # Topic used to send correction through ROS
+      # ros_send_firetime_topic: /lidar_firetime
+      # ros_send_ptp_topic: /lidar_ptp                # Topic used to send PTP lock status, offset through ROS
+      send_packet_ros: false                          # true: Send packets through ROS 
+      send_point_cloud_ros: true                      # true: Send point cloud through ROS    
+      send_imu_ros: true                              # true: Send imu through ROS    

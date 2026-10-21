@@ -1,0 +1,91 @@
+# ============================================================
+#  BIN ランドマーク検出器パラメータ
+#  対象ノード: cylinder_landmark_detector_bin
+#  bin_landmark_localization.launch.py から読み込まれる。
+#  注: BIN_COUNT(=4) はパターン辞書と不可分のためソース固定。
+#  入出力トピック/フレームは launch から渡すためここには含めない。
+# ============================================================
+/**:
+  ros__parameters:
+    # ---- ランドマーク物理仕様 ----
+    anchor_height: 0.30          # 上下端アンカーの高さ [m]
+    bin_height: 0.30             # 中間ビンの高さ [m]
+    landmark_width: 0.40         # 横幅 [m] (情報表示用)
+
+    # ---- 強度フィルタ ----
+    intensity_ratio: 0.95        # max強度に対する閾値比率
+    intensity_abs_min: 250.0     # 強度絶対値の下限
+
+    # ---- 2D XY グループ化 ----
+    group_xy_threshold: 0.30     # BFSマージ距離の上限 [m]
+    min_group_points: 3          # ノイズ除去用最小点数
+    # 距離適応クラスタリング: eps(r)=clamp(k·r·Δθ_h, floor, group_xy_threshold)
+    group_xy_adaptive: true
+    group_xy_k: 3.0
+    group_xy_dtheta_h: 0.00349   # 水平角分解能 [rad]
+    group_xy_floor: 0.05         # eps 下限 [m]
+
+    # ---- ビン判定 ----
+    cylinder_xy_radius: 0.20     # 円柱XY中心からの許容半径 [m] (クラスタゲート用)
+    bin_min_points: 5            # 旧点数判定の最小点数 (bin_read_intensity=false時のみ使用)
+    bin_inner_margin: 0.05       # アンカー漏れ込み防止の内側余白 [m]
+
+    # ---- publish用XY中心の既知半径円フィット (known_r) ----
+    #   ビン判定(ID)は生重心cx,cyのまま不変。出力位置のみ精緻化する。
+    #   初期値/フォールバックは los_offset (重心を landmark_radius だけ視線方向へ押し出した種)。
+    landmark_radius: 0.20675     # 円柱の物理外径半径 [m] (外径413mm)。円フィットの既知半径
+    cfit_known_r_min_points: 4   # フィット実行の最小点数 (未満は los_offset を出力)
+    cfit_known_r_max_rms: 0.05   # 残差RMS上限 [m] (超過は los_offset にフォールバック)
+    cfit_known_r_max_iter: 10    # Gauss-Newton 最大反復回数
+
+    # ---- BIN 生成方式 ----
+    #   top_anchor_only : 上端(z_high)基準。z_low床汚染に不感 (推奨)。
+    #   both_anchors    : 上下両アンカ参照。scale=z_span/expected。
+    bin_method: "top_anchor_only"
+    top_anchor_detect_window: 0.30  # 上端アンカー z_ta 平均窓 [m] (既定=anchor_height)
+
+    # ---- 上端基準・地面フリー復号 (2026-07-17, 既定=これで運用) ----
+    # z_high(=最上反射=マーカー上端)から既知反射高1.70m下ろした窓で本体を切り、窓より下の
+    # 床反射虚像を z_span判定から除外。床/絶対高さ/鏡像を使わず物体自身で閉じる。
+    decode_top_referenced: true
+    decode_window_tol: 0.15         # 窓下端余白 [m]
+
+    # ---- 地面下フィルタ ----
+    ground_filter_enable: true
+    ground_filter_z_min: -1.40      # この値未満の z を捨てる [m, 入力LiDAR frame]
+
+    # ---- z_span ゲート ----
+    height_tol_low: 0.15            # 短側許容 [m]
+    height_tol_high: 0.60           # 長側許容 [m]
+
+    # ---- 曲率ゲート (2026-07-17: 平面/円柱 弁別) ----
+    # r_est(Kåsa円フィット半径)=物理シリンダ半径で距離不変。帯外(平面=大/微小ノイズ弧=小)を棄却。
+    curv_gate_enable: true
+    r_est_min: 0.14                 # 円柱半径帯 下限 [m]
+    r_est_max: 0.35                 # 円柱半径帯 上限 [m] (遠方の疎で暴れるr_estの本物を救済, FP増なし実測)
+
+    # ---- ビン読み取り: 強度割合判定 (2026-07-16) ----
+    # 各ビンを「窓内の点のうち高強度の割合」で判定 (点数はサンプリング密度依存のため)。
+    bin_read_intensity: true
+    bin_min_total: 2                # 割合判定に必要な窓内最小点数
+    bin_intensity_radius: 0.20      # 割合の分母を取るXY半径 [m]
+    bin_frac_min: 0.20              # 高強度割合下限
+
+    # ---- アブレーション用トグル (既定=出荷挙動) ----
+    same_id_collision_discard: true # 同一ID複数箇所→全破棄
+    anchor_guard_enable: true       # 上端(両端)アンカー欠落で棄却
+    dedup_enable: true              # 近接(<0.5m)同一円柱の重複除去
+
+    # ---- パターンマッチング ----
+    hamming_max_dist: 0             # 許容ハミング距離 (0=完全一致のみ)
+
+    # ---- 時間ヒステリシス (1フレーム誤識別ブロック) ----
+    hysteresis_enable: true
+    hysteresis_window: 3            # 履歴フレーム数
+    hysteresis_min_agree: 2         # 多数決成立に必要な同一ID数
+    hysteresis_track_radius: 0.5    # トラック関連付け半径 [m]
+    hysteresis_expire_frames: 5     # 連続未検出でトラック削除
+    hysteresis_warmup_frames: 2     # publish開始までの最小観測数
+
+    # ---- 性能ログ ----
+    perf_log_enable: false          # 区間処理時間ログ (調査用)

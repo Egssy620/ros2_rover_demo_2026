@@ -1,0 +1,25 @@
+# ROS 2 / colcon generated directories
+/ros_ws/build/
+/ros_ws/install/
+/ros_ws/log/
+
+# ROS bag and runtime data
+*.bag
+*.bag.active
+*.db3
+*.mcap
+
+# Python caches
+**/__pycache__/
+*.py[cod]
+
+# Editor and operating-system files
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Compiled ELF files accidentally stored beside nedo_mapping sources
+/ros_ws/src/nedo_mapping/landmark_bundle_adjustment
+/ros_ws/src/nedo_mapping/landmark_mapper_node

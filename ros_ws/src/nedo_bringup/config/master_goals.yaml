@@ -1,0 +1,36 @@
+# ★見本: 目標姿勢の選び方は現地の地図に合わせて作り、master.launch.py goals_file:=<そのファイル> で渡す。これはヤード計画値の地図用
+# マスターが経路計画へ渡す目標姿勢の選び方 (2026-10-05)
+# 座標は書かない。起動時に master.launch.py がランドマーク地図 (params_yard.yaml) から計算して master_node に渡す。
+#
+# 各目標で選ぶもの
+#   landmarks   : [A, B]  2本のランドマーク ID (params.yaml の LM_ids)。目標位置 = A と B の中点
+#   target_side : left | right   A→B に向かって見て、山 (荷下ろし先) が線のどちら側にあるか
+#   facing      : front | left | back | right   山 (荷下ろし先) に向ける機体の面
+#                 left = アーム側 (master.launch.py の arm_yaw_deg = 90°)
+#   standoff    : (省略可, 既定 0) 中点から目標と反対側へ下がる距離 [m]
+#   機体は A→B の線に直角に、facing の面を target_side 側へ向けて止まる
+#
+# ヤード (2026-10-05): 山の前 = marker_2-3 の中点、荷下ろし①②③ = marker_4-5 / 5-6 / 6-7 の中点
+#   山 (x 1〜10) は marker_2→3 (+y 向き) の左、荷下ろし場所 (x 25〜30) は marker_4→5 等 (−y 向き) の左
+#   向ける面はどれもアーム側 (left)。ここは未定なので変えてよい
+
+pile_front:
+  landmarks: [marker_2, marker_3]
+  target_side: left
+  facing: left
+  # 中点 (10, 21.5) は山の縁 (x = 10) の上なので下がる。仮に 0.8 m =
+  #   機体中心からアーム側の縁 0.4 (body_y_max) + 機体と家電の最小距離 D 0.3 (approach_limit) + 余裕 0.1
+  #   (下がらないとシミュで 近すぎ → 経路計画「行けない」で止まった 2026-10-05)
+  standoff: 0.8
+
+# 荷下ろし地点。家電の種類 1, 2, 3 の順
+drops:
+  - landmarks: [marker_4, marker_5]
+    target_side: left
+    facing: left
+  - landmarks: [marker_5, marker_6]
+    target_side: left
+    facing: left
+  - landmarks: [marker_6, marker_7]
+    target_side: left
+    facing: left
